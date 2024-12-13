@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from core.models.unet.modules import (
+from core.modeling.unet.modules import (
     ASPP,
     Upsample_,
     ResidualConv,

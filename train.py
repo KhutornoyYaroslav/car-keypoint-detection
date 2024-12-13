@@ -3,7 +3,7 @@ import torch
 import logging
 import argparse
 from core.config import cfg as cfg
-from core.models import build_model
+from core.modeling import build_model
 from core.data import make_data_loader
 from core.solver import make_optimizer
 from core.engine.train import do_train

@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from glob import glob
 from core.config import cfg as cfg
-from core.models import build_model
+from core.modeling import build_model
 from core.utils.logger import setup_logger
 from core.utils.colors import get_rgb_colors
 from core.utils.tensorboard import draw_labels
