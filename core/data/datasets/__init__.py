@@ -1,6 +1,10 @@
-# from .car_dataset import CarDataset
+from core.config import CfgNode
+from torch.utils.data import Dataset
+from core.data.transforms.transforms import BaseTransform
 from .pose_dataset import PoseDataset
 
 
-def build_dataset(cfg, root_dir: str, is_train: bool):
-    return PoseDataset(cfg, root_dir, is_train)
+def build_dataset(cfg: CfgNode,
+                  root_dir: str,
+                  transforms: BaseTransform):
+    return PoseDataset(cfg, root_dir, transforms)

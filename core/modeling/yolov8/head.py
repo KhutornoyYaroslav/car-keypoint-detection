@@ -214,7 +214,7 @@ def build_head(cfg: CfgNode,
     # cfg_head = cfg.MODEL.HEAD
 
     # model = Detect(nc=cfg_head.NUM_CLASSES, ch=channels)
-    model = Pose(nc=1, kpt_shape=(32, 2), ch=channels) # TODO: get params from config
+    model = Pose(nc=1, kpt_shape=(len(cfg.DATASET.CLASS_LABELS), 3), ch=channels)
     model.stride = torch.tensor(strides)
 
     # bias must be inited once before training

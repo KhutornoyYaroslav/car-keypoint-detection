@@ -56,6 +56,20 @@ class BaseTransform:
         """
         pass
 
+    def apply_kpts(self, kpts: np.ndarray) -> Optional[Union[np.ndarray, torch.Tensor]]:
+        """
+        Applies transformation to keypoints.
+
+        Args:
+            'kpts' (numpy.ndarray): Array of keypoints with shape (T, N, num_kpts, 3),
+                where T is sequence length, N is number of skeletons per image.
+                Assumes coordinates are normalized in range [0, 1].
+
+        Returns:
+            (numpy.ndarray): Transformed array of keypoints with shape (T, N, num_kpts, 3)
+        """
+        pass
+
     def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Applies transformation to data.
@@ -209,7 +223,7 @@ class PadResize(BaseTransform):
         # to xyxy, denormalize
         bbox = xywh2xyxy(bbox)
         bbox *= [img_w, img_h, img_w, img_h]
-        # translate bboxes
+        # translate
         bbox[..., 0::2] += pads[2] # x offset
         bbox[..., 1::2] += pads[0] # y offset
         # clip
@@ -224,12 +238,35 @@ class PadResize(BaseTransform):
         bbox /= [new_w, new_h, new_w, new_h]
         return bbox
     
+    def apply_kpts(self, kpts: np.ndarray, img_w: int, img_h: int) -> np.ndarray:
+        pads = self._calc_pads(img_w, img_h)
+        new_w = np.sum([img_w, *pads[2:]])
+        new_h = np.sum([img_h, *pads[:2]])
+        # denormalize
+        kpts[..., 0] *= img_w
+        kpts[..., 1] *= img_h
+        # translate
+        kpts[..., 0] += pads[2] # x offset
+        kpts[..., 1] += pads[0] # y offset
+        # filter empty kpts (filling visible flag by zero)
+        # TODO: is needed to be filtered ?
+        # mask_x = kpts[..., 0] >= 0 and kpts[..., 0] < 
+        # mask = bbox[..., 2] * bbox[..., 3] > 0
+        # mask = np.expand_dims(mask, -1).repeat(4, -1).astype(np.int32)
+        # bbox *= mask
+        # normalize
+        kpts[..., 0] /= new_w
+        kpts[..., 1] /= new_h
+        return kpts
+
     def __call__(self, data):
         if 'img' in data:
             h, w = data['img'].shape[1:3]
             data['img'] = self.apply_img(data['img'])
             if 'bbox' in data:
                 data['bbox'] = self.apply_bbox(data['bbox'], w, h)
+            if 'kpts' in data:
+                data['kpts'] = self.apply_kpts(data['kpts'], w, h)
         return data
 
 
@@ -333,6 +370,9 @@ class ToTensor(BaseTransform):
     
     def apply_cls(self, cls):
         return torch.from_numpy(cls).type(torch.float32)
+    
+    def apply_kpts(self, kpts):
+        return torch.from_numpy(kpts).type(torch.float32)
 
     def __call__(self, data):
         if 'img' in data:
@@ -341,6 +381,8 @@ class ToTensor(BaseTransform):
             data['bbox'] = self.apply_bbox(data['bbox'])
         if 'cls' in data:
             data['cls'] = self.apply_cls(data['cls'])
+        if 'kpts' in data:
+            data['kpts'] = self.apply_cls(data['kpts'])
         return data
 
 

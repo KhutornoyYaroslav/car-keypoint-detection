@@ -2,6 +2,7 @@ import time
 import torch
 import logging
 from .datasets import build_dataset
+from .transforms import build_transforms
 from torch.utils.data import (
     Dataset,
     DataLoader,
@@ -38,10 +39,13 @@ def make_data_loader(cfg, is_train: bool = True) -> DataLoader:
     else:
         dataset_roots = cfg.DATASET.VAL_ROOT_DIRS
 
+    # build transforms
+    transforms = build_transforms(cfg, is_train)
+
     # create dataset
     datasets = []
     for root_dir in dataset_roots:
-        dataset = build_dataset(cfg, root_dir, is_train)
+        dataset = build_dataset(cfg, root_dir, transforms)
         logger.info(f"Loaded dataset from '{root_dir}'. Size: {len(dataset)}")
         datasets.append(dataset)
 

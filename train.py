@@ -5,10 +5,11 @@ import argparse
 from core.config import cfg as cfg
 from core.modeling import build_model
 from core.data import make_data_loader
-from core.solver import make_optimizer
+from core.engine.optimization import make_optimizer
 from core.engine.train import do_train
 from core.utils.logger import setup_logger
 from core.utils.checkpoint import CheckPointer
+from core.utils.dist_util import is_main_process
 
 
 def train_model(cfg, args):
@@ -24,7 +25,6 @@ def train_model(cfg, args):
     if data_loader_train is None:
         logger.error(f"Failed to create train dataset loader.")
         return None
-
     data_loader_val = make_data_loader(cfg, is_train=False)
 
     # create optimizer
@@ -33,12 +33,23 @@ def train_model(cfg, args):
 
     # create checkpointer
     arguments = {"epoch": 0}
-    checkpointer = CheckPointer(model, optimizer, scheduler, cfg.OUTPUT_DIR, True, logger)
-    extra_checkpoint_data = checkpointer.load(cfg.MODEL.PRETRAINED_WEIGHTS)
+    save_to_disk = is_main_process()
+    checkpointer = CheckPointer(model, optimizer, scheduler, cfg.OUTPUT_DIR, save_to_disk, logger)
+    # extra_checkpoint_data = checkpointer.load(cfg.MODEL.PRETRAINED_WEIGHTS) # TODO: used in build_yolo_backbone
+    extra_checkpoint_data = checkpointer.load()
     arguments.update(extra_checkpoint_data)
 
     # Train model
-    model = do_train(cfg, model, data_loader_train, data_loader_val, optimizer, scheduler, checkpointer, device, arguments, args)
+    model = do_train(cfg,
+                     model,
+                     data_loader_train,
+                     data_loader_val,
+                     optimizer,
+                     scheduler,
+                     checkpointer,
+                     device,
+                     arguments,
+                     args)
 
     return model
 

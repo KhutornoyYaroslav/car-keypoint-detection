@@ -43,6 +43,7 @@ _CFG.SOLVER.TYPE = 'Adam'
 _CFG.SOLVER.MAX_EPOCH = 100
 _CFG.SOLVER.BATCH_SIZE = 32
 _CFG.SOLVER.LR = 1e-3
+_CFG.SOLVER.WEIGHT_DECAY = 0.0
 
 # ---------------------------------------------------------------------------- #
 # Output options

@@ -4,7 +4,7 @@ from torch import nn
 from core.config import CfgNode
 from core.modeling.yolov8.head import build_head
 from core.modeling.yolov8.backbone import build_backbone
-from typing import List, Any
+from typing import List, Any, Tuple
 
 
 class YoloV8Pose(nn.Module):
@@ -29,6 +29,9 @@ class YoloV8Pose(nn.Module):
     
     def get_dfl_num_bins(self) -> int:
         return self.head.dfl_bins
+    
+    def get_kpts_shape(self) -> Tuple[int, int]:
+        return self.head.kpt_shape
 
 
 def initialize_weights(model: nn.Module):

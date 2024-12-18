@@ -1,7 +1,7 @@
 import argparse
 from core.config import cfg
 from core.data.datasets import build_dataset
-# from core.data.transforms import build_transforms
+from core.data.transforms import build_transforms
 
 
 def str2bool(s):
@@ -12,7 +12,7 @@ def main():
     # parse arguments
     parser = argparse.ArgumentParser(description='Car Keypoint Detection In Traffic Surveillance Dataset Visualization')
     parser.add_argument("-d", "--data-root", dest="data_root", required=False, type=str,
-                        default="/media/yaroslav/SSD/khutornoy/data/CAR_KEYPOINTS/sources/kp_done_parts/done_part14")
+                        default="/media/yaroslav/SSD/khutornoy/data/CAR_KEYPOINTS/sources/kp_done_parts/done_part8")
     parser.add_argument("-t", "--istrain", dest="istrain", required=False, type=str2bool,
                         default=True)
     parser.add_argument("-r", "--frame-rate", dest="frame_rate", required=False, type=int,
@@ -20,7 +20,7 @@ def main():
     args = parser.parse_args()
 
     # set config
-    cfg.INPUT.IMAGE_SIZE = [1920, 1080]
+    cfg.INPUT.IMAGE_SIZE = [2400//2, 1600//2]
     cfg.DATASET.CLASS_LABELS = [
         'fr wheel',
         'br wheel',
@@ -58,9 +58,8 @@ def main():
     cfg.freeze()
 
     # check dataset
-    # transforms = build_transforms(cfg, is_train=args.istrain)
-    # dataset = build_dataset(cfg, args.data_path, args.anno_path, transforms)
-    dataset = build_dataset(cfg, args.data_root, args.istrain)
+    transforms = build_transforms(cfg, is_train=args.istrain)
+    dataset = build_dataset(cfg, args.data_root, transforms)
     print(f"Dataset size: {len(dataset)}")
     dataset.visualize(args.frame_rate)
 
